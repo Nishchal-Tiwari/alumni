@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://www.gstatic.com/charts/loader.js"></script>
+<script src="https://www.google.com/jsapi"></script>
+</head>
+<body>
+    <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
+    
+    <%-include('style')%>
+    <%if(data){%>
+        <script>
+            const data=<%-JSON.stringify(data)%>
+        </script>
+    <%}%>
+    <%if(names){%>
+        <script>
+            const name_data=<%-JSON.stringify(names)%>
+
+        </script>
+    <%}%>
+    <%if(name_data){%>
+        <script>
+            const roll_data=<%-JSON.stringify(name_data)%>
+            
+        </script>
+    <%}%>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/2.3.0/alpine-ie11.js" integrity="sha512-6m6AtgVSg7JzStQBuIpqoVuGPVSAK5Sp/ti6ySu6AjRDa1pX8mIl1TwP9QmKXU+4Mhq/73SzOk6mbNvyj9MPzQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+
+        <div class="relative w-full mt-4 rounded-md border h-10 p-1 bg-gray-200">
+            <div class="relative w-full h-full flex items-center">
+                <div @click="selected=!selected" class="w-full flex justify-center text-gray-400 cursor-pointer">
+                    <button>U no like me?</button>
+                </div>
+                <div @click="selected=!selected" class="w-full flex justify-center text-gray-400 cursor-pointer">
+                    <button>No choose me</button>
+                </div>
+            </div>
+
+            
+            <span :class="{ 'left-1/2 -ml-1 text-gray-800':!selected, 'left-1 text-indigo-600 font-semibold':selected }"
+                x-text="selected ? 'I\'m Selected' : '\'cause I\'m better!'"
+            class="bg-white shadow text-sm flex items-center justify-center w-1/2 rounded h-[1.88rem] transition-all duration-150 ease-linear top-[4px] absolute"></span>
+        </div>
+    
+    <div class="autocomplete" style="width:300px;">
+        <input id="myInput" type="text" name="myCountry" placeholder="Type company here . . .">
+        <input id="names" type="text" name="myCountry" placeholder="Search by name">
+        <button id="submit">✔</button>
+      </div>
+      <article class="flow">
+        <h3 id="company">Placements Info.</h3>
+        <p id="offers">  </p>
+        </article>
+      <div class="app">
+       
+        <div class="sidebar">
+          
+            
+            <div id="year"></div>
+            <p style="font-size: xx-small;font-weight:lighter;display: none;" id="info_chart">hover the chart to see  placed  record of specific  year</p>
+        <div id="branch"></div>
+
+        </div>
+        <div class="main">
+            <div class="team">
+              <ul class="auto-grid" role="list" id="resss">
+             </ul>
+            </div>
+          </div>
+      </div>
+
+
+      
+ 
+
+
+
+   
+
+    
+
+  
+  <script>
+    var res=document.getElementById('resss')
+    var ele=document.getElementById("myInput");
+    var names=document.getElementById("names")
+    ele.addEventListener("keyup",(e)=>{
+       
+        if(e.keyCode==13)
+        {
+          execute();
+        }
+            
+    })
+    names.addEventListener("keyup",(e)=>{
+       
+       if(e.keyCode==13)
+       {
+         window.location.replace('user/'+roll_data[e.target.value])
+       }
+           
+   })
+   autocomplete(ele, data);
+   console.log(name_data)
+   autocomplete(names, name_data);
+
+
+    document.getElementById('submit').addEventListener('click',()=>{
+        execute();
+    })
+
+   function execute(){
+    fetch('/'+ele.value).then(ress=>ress.json()).then(d=>{
+            
+            t=''
+           d.map(k=>{
+            t+=`<li>
+        <a href="/user/${k.image.replace('https://glauniversity.in:8103/','').replace('.jpg','')}" target=_blank" class="profile">
+          <h2 class="profile__name">${k.username}</h2>
+          <p>${k.image.replace('https://glauniversity.in:8103/','').replace('.jpg','')}</p>
+          <img alt="Anita Simmons" src="${k.image}" />
+        </a>
+      </li>`
+           })
+           res.innerHTML=t
+           manipulate1(d)
+           manipulate(d)
+           count(d);
+           document.getElementById('info_chart').style.display='block'
+
+           
+          })
+   }
+    </script>
+
+
+
+
+<script>
+    function count(d){
+        total_offers=d.length;
+        document.getElementById('offers').innerText=total_offers+" offers";
+        document.getElementById('company').innerText=ele.value;
+    }
+    function manipulate(d){
+        var m=new Map();
+        d.map(k=>{
+            if(!m.get(k.year))
+                m.set(k.year,1);
+            else
+                m.set(k.year,m.get(k.year)+1);
+        })
+        ar=[]
+        for( var [k,v] of m)
+            ar.push([k,v]);
+        makeChart(ar,'year')
+    }
+    function manipulate1(d){
+        var m=new Map();
+        d.map(k=>{
+            if(!m.get(k.branch))
+                m.set(k.branch,1);
+            else
+                m.set(k.branch,m.get(k.branch)+1);
+        })
+        ar=[]
+        for( var [k,v] of m)
+            ar.push([k,v]);
+        makeChart(ar,'branch')
+    }
+    
+    function makeChart(data2,mid){
+        google.charts.load('current', {packages: ['corechart']});
+    google.charts.setOnLoadCallback(drawChart);
+     function drawChart() {
+      
+      var data1 = new google.visualization.DataTable();
+      data1.addColumn('string', 'Element');
+      data1.addColumn('number', 'Total students');
+      
+      
+      data1.addRows(data2)
+      
+     
+     
+
+      var chart = new google.visualization.PieChart(document.getElementById(mid));
+      var options = {
+  width: 400,
+  height: 200,
+  title: mid=='year'?'Yearly data':'Branch wise data',
+  is3D: true
+};
+
+      chart.draw(data1, options);
+    }
+    }
+   
+   
+</script>
+
+
+
+</body>
+</html>

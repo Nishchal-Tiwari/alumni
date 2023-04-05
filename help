@@ -1,0 +1,1 @@
+cat db_schema.sql | sqlite3 database.db
